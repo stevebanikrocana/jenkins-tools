@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Create a new directory $JENKINS_HOME/logs/slave_logs if it doesn't already exist.
+# Remove any existing files from $JENKINS_HOME/logs/slave_logs.
+# For each directory in $JENKINS_HOME/logs/slaves :
+#   Look in that directory for a file named "slave.log"
+#   If that file contains a line containing "Creating connection to", then
+#     parse out the actual hostname / IP address it is attempting to connect to
+#     Create symbolic link from that slave.log file $JENKINS_HOME/logs/slave_logs *with that hostname / IP address*.log.
+
+# Manipulate IFS to allow for ' ' (spaces) in Worker node names
+# Save $IFS
+SAVEIFS=$IFS
+# Set $IFS to newline - was ' ' (space)
+IFS=$(echo -en "\n\b")
+
+
+[[ "$JENKINS_HOME" ]] || { echo "ERROR: JENKINS_HOME not set"; exit 1; }
+
+[ -d "$JENKINS_HOME" ] || { echo "ERROR: JENKINS_HOME ($JENKINS_HOME) not found"; exit 1; }
+
+LOGS_SLAVES=$JENKINS_HOME/logs/slaves
+
+[[ "$LOGS_SLAVES" ]] || { echo "LOGS_SLAVES not set"; exit 1; }
+
+LOGS_SLAVE_LOGS=$JENKINS_HOME/logs/slave_logs
+
+# Create $JENKINS_HOME/logs/slave_logs if does not already exist
+mkdir -p $LOGS_SLAVE_LOGS || { echo "ERROR: Unable to create slave_logs ($LOGS_SLAVE_LOGS) directory"; exit 1; }
+
+# Remove any existing links to slave.log files
+rm -f $LOGS_SLAVE_LOGS/* || { echo "ERROR: Unable to remove slave_logs ($LOGS_SLAVE_LOGS) links"; exit 1; }
+
+
+for slave_log_path in $LOGS_SLAVES/* ; do
+
+  slave_name=`basename $slave_log_path`
+
+  case $slave_name in
+    null)
+      # ignore
+      ;;
+    *)
+      slave_host=$( grep -a 'Opening SSH connection' ${LOGS_SLAVES}/$slave_name/slave.log | sed 's/^.* \(.*\):.*$/\1/')
+      if [[ "$slave_host" ]]; then 
+        (cd ${LOGS_SLAVE_LOGS} && ln -s -f ${LOGS_SLAVES}/$slave_name/slave.log ${slave_host}.log)
+      fi
+      ;;
+  esac
+done
+
+# Restore $IFS
+IFS=$SAVEIFS
+
