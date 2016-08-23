@@ -29,7 +29,7 @@ LOGS_SLAVE_LOGS=$JENKINS_HOME/logs/slave_logs
 mkdir -p $LOGS_SLAVE_LOGS || { echo "ERROR: Unable to create slave_logs ($LOGS_SLAVE_LOGS) directory"; exit 1; }
 
 # Remove any existing links to slave.log files
-rm -f $LOGS_SLAVE_LOGS/* || { echo "ERROR: Unable to remove slave_logs ($LOGS_SLAVE_LOGS) links"; exit 1; }
+# rm -f $LOGS_SLAVE_LOGS/* || { echo "ERROR: Unable to remove slave_logs ($LOGS_SLAVE_LOGS) links"; exit 1; }
 
 
 for slave_log_path in $LOGS_SLAVES/* ; do
