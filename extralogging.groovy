@@ -136,7 +136,7 @@ public class SingleLineFormatter extends Formatter {
 
 logger.info("before adding new handler")
 
-FileHandler handler = new FileHandler("/tmp/jenkins.log")
+FileHandler handler = new FileHandler("/var/log/jenkins/jenkins_formatted.log")
 
 //Formatter formatter = new SimpleFormatter()
 //Formatter formatter = new LogFormatter()
